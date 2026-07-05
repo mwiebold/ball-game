@@ -2,7 +2,7 @@ import type { SimEvent } from './events';
 import { clampSpeed, lerp, reflect, solveOutwardCrossing } from './physics';
 import { buildRings, inGap, normalizeAngle } from './rings';
 import { Rng } from './rng';
-import { WORLD_HEIGHT, WORLD_WIDTH } from './settings';
+import { worldDimsFor } from './settings';
 import type { Ball, Phase, Ring, Settings, Vec2 } from './types';
 
 export const STEP_SECONDS = 1 / 60;
@@ -23,9 +23,9 @@ export const STEP_SECONDS = 1 / 60;
  */
 export class World {
   readonly settings: Settings;
-  readonly width = WORLD_WIDTH;
-  readonly height = WORLD_HEIGHT;
-  readonly center: Vec2;
+  width: number;
+  height: number;
+  center: Vec2;
 
   rings: Ring[] = [];
   ball!: Ball;
@@ -39,6 +39,9 @@ export class World {
 
   constructor(settings: Settings) {
     this.settings = settings;
+    const dims = worldDimsFor(settings.aspect);
+    this.width = dims.width;
+    this.height = dims.height;
     this.center = { x: this.width / 2, y: this.height / 2 };
     this.timeRemaining = settings.countdownSeconds;
     this.reset();
@@ -46,6 +49,12 @@ export class World {
 
   /** Restore the world to its initial seeded state. */
   reset(): void {
+    // Recompute dimensions in case the aspect ratio changed (structural setting).
+    const dims = worldDimsFor(this.settings.aspect);
+    this.width = dims.width;
+    this.height = dims.height;
+    this.center = { x: this.width / 2, y: this.height / 2 };
+
     this.rng = new Rng(this.settings.seed);
     this.rings = buildRings(this.settings, this.rng);
     this.innermostIndex = 0;

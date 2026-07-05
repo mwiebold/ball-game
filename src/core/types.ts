@@ -14,8 +14,14 @@ export type GapAlignment = 'aligned' | 'spiral' | 'random';
 /** Color palette for rings/ball (REQUIREMENTS S-17). */
 export type PaletteName = 'rainbowAngle' | 'rainbowRing' | 'mono' | 'fire' | 'ice';
 
-/** Bounce sound mode (REQUIREMENTS S-31). */
-export type BounceSound = 'off' | 'tone' | 'rising';
+/** Bounce sound mode (REQUIREMENTS S-31, S-34 adds 'melody'). */
+export type BounceSound = 'off' | 'tone' | 'rising' | 'melody';
+
+/** Bundled melody sequences for melody mode (REQUIREMENTS S-34). */
+export type MelodyName = 'twinkle' | 'ode' | 'frere' | 'scale' | 'arp';
+
+/** Canvas aspect ratio (REQUIREMENTS S-8). */
+export type AspectRatio = '9:16' | '1:1' | '16:9';
 
 /**
  * Full simulation settings. Phase 1 hard-codes a default; Phase 2 drives these
@@ -62,7 +68,12 @@ export interface Settings {
   soundEnabled: boolean;
   volume: number; // 0 .. 1
   bounceSound: BounceSound;
+  melody: MelodyName; // used when bounceSound === 'melody'
   ringBreakSound: boolean;
+
+  // Layout & feel
+  aspect: AspectRatio;
+  screenShake: boolean;
 }
 
 export type Phase = 'playing' | 'won' | 'lost';

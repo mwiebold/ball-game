@@ -91,10 +91,20 @@ usable on a phone; deployed URL live.
 Pages setting (Settings → Pages → Source: GitHub Actions) and a push to the
 default branch.
 
-### Phase 5 — Stretch (P2/P3 backlog, post-review)
-Melody mode with bundled sequences (S-34) and custom melody import; multiple
-balls + ball-ball collisions (F-8); alternative destruction modes;
-aspect-ratio options; screen shake.
+### Phase 5 — Stretch (P2/P3 backlog, post-review) 🚧 in progress
+Delivered so far:
+- **Melody mode** (S-34): `bounceSound: 'melody'` plays a bundled sequence one
+  note per bounce (Twinkle Twinkle, Ode to Joy, Frère Jacques, scale, arpeggio;
+  all public-domain). The "Reference video" preset now uses it.
+- **Aspect-ratio options** (S-8): 9:16 / 1:1 / 16:9, with the world dimensions
+  and canvas re-fitting live.
+- **Screen shake** (S-24): a decaying playfield jitter on ring break.
+
+Still on the backlog:
+- Multiple balls + ball-ball collisions (F-8) — the biggest item; changes the
+  single-ball innermost-index model.
+- Alternative destruction modes (F-9): ring-shrinks, gap-widens, outermost-first.
+- Custom melody import (S-35).
 
 ## 4. Risks & mitigations
 

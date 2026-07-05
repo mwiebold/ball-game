@@ -33,11 +33,13 @@ export class Renderer {
   private readonly particles = new ParticleSystem();
   private trail: TrailPoint[] = [];
   private flares: Flare[] = [];
+  private shake = 0; // current screen-shake magnitude, world units
 
   reset(): void {
     this.trail = [];
     this.flares = [];
     this.particles.clear();
+    this.shake = 0;
   }
 
   /** React to a sim event (bounce flare, ring-break embers). */
@@ -53,10 +55,13 @@ export class Renderer {
         hue: paletteHue(s.palette, angleNorm, event.ringIndex, world.rings.length),
       });
       if (this.flares.length > 24) this.flares.shift();
-    } else if (event.type === 'ringBreak' && s.particles) {
-      const angleNorm = angleNormOf(event.x, event.y, world.center.x, world.center.y);
-      const hue = paletteHue(s.palette, angleNorm, event.ringIndex, world.rings.length);
-      this.particles.spawnBurst(event.x, event.y, hue, s.particleIntensity);
+    } else if (event.type === 'ringBreak') {
+      if (s.particles) {
+        const angleNorm = angleNormOf(event.x, event.y, world.center.x, world.center.y);
+        const hue = paletteHue(s.palette, angleNorm, event.ringIndex, world.rings.length);
+        this.particles.spawnBurst(event.x, event.y, hue, s.particleIntensity);
+      }
+      if (s.screenShake) this.shake = Math.max(this.shake, 12);
     }
   }
 
@@ -69,6 +74,20 @@ export class Renderer {
     ctx.fillStyle = '#000';
     ctx.fillRect(0, 0, cw, ch);
 
+    // Screen shake: offset the playfield (not the HUD) by a decaying jitter.
+    let ox = 0;
+    let oy = 0;
+    if (this.shake > 0.01) {
+      ox = (Math.random() * 2 - 1) * this.shake * scale;
+      oy = (Math.random() * 2 - 1) * this.shake * scale;
+      this.shake = Math.max(0, this.shake - frameSeconds * 60);
+    } else {
+      this.shake = 0;
+    }
+
+    ctx.save();
+    ctx.translate(ox, oy);
+
     const cx = world.center.x * scale;
     const cy = world.center.y * scale;
 
@@ -80,6 +99,9 @@ export class Renderer {
     this.updateFlares(frameSeconds);
     this.drawTrailAndBall(ctx, world, scale);
     this.drawFlares(ctx, scale);
+
+    ctx.restore();
+
     this.drawHud(ctx, world, scale);
   }
 

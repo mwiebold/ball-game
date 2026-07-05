@@ -46,7 +46,14 @@ export interface ToggleControl extends BaseControl {
 
 export type Control = NumberControl | SelectControl | TextControl | ToggleControl;
 
-export const GROUPS = ['Arena & Rings', 'Ball & Physics', 'Rules', 'Visuals', 'Audio'] as const;
+export const GROUPS = [
+  'Arena & Rings',
+  'Ball & Physics',
+  'Rules',
+  'Visuals',
+  'Audio',
+  'Layout',
+] as const;
 export type GroupName = (typeof GROUPS)[number];
 
 export const SCHEMA: readonly Control[] = [
@@ -303,9 +310,39 @@ export const SCHEMA: readonly Control[] = [
       { value: 'off', label: 'Off' },
       { value: 'tone', label: 'Single tone' },
       { value: 'rising', label: 'Rising per ring' },
+      { value: 'melody', label: 'Melody' },
+    ],
+  },
+  {
+    key: 'melody',
+    group: 'Audio',
+    label: 'Melody (for melody mode)',
+    kind: 'select',
+    live: true,
+    options: [
+      { value: 'twinkle', label: 'Twinkle Twinkle' },
+      { value: 'ode', label: 'Ode to Joy' },
+      { value: 'frere', label: 'Frère Jacques' },
+      { value: 'scale', label: 'Major scale' },
+      { value: 'arp', label: 'Arpeggio' },
     ],
   },
   { key: 'ringBreakSound', group: 'Audio', label: 'Ring-break SFX', kind: 'toggle', live: true },
+
+  // --- Layout & feel ---
+  {
+    key: 'aspect',
+    group: 'Layout',
+    label: 'Aspect ratio',
+    kind: 'select',
+    live: false,
+    options: [
+      { value: '9:16', label: 'Portrait 9:16' },
+      { value: '1:1', label: 'Square 1:1' },
+      { value: '16:9', label: 'Landscape 16:9' },
+    ],
+  },
+  { key: 'screenShake', group: 'Layout', label: 'Screen shake', kind: 'toggle', live: true },
 ];
 
 /** Look up a control by its settings key. */

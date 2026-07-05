@@ -19,8 +19,6 @@ import { UserPresetStore } from './config/userPresets';
  * preset/randomize/share/import flows replace or serialize it.
  */
 
-const ASPECT = 9 / 16;
-
 const canvas = document.querySelector<HTMLCanvasElement>('#game');
 const panelEl = document.querySelector<HTMLElement>('#panel');
 if (!canvas) throw new Error('#game canvas not found');
@@ -33,13 +31,15 @@ function resize(): void {
   const stage = canvas.parentElement;
   if (!stage) return;
 
+  // Fit a box of the world's aspect ratio inside the available stage area.
+  const ratio = world.width / world.height;
   const availH = stage.clientHeight;
   const availW = stage.clientWidth;
   let cssH = availH;
-  let cssW = cssH * ASPECT;
+  let cssW = cssH * ratio;
   if (cssW > availW) {
     cssW = availW;
-    cssH = cssW / ASPECT;
+    cssH = cssW / ratio;
   }
 
   const dpr = Math.min(window.devicePixelRatio || 1, 2);
@@ -73,6 +73,9 @@ const userPresets = new UserPresetStore(safeLocalStorage());
 function rebuild(): void {
   world.reset();
   renderer.reset();
+  synth.resetMelody();
+  // The aspect ratio may have changed, so re-fit the canvas.
+  resize();
 }
 
 function loadSettings(next: typeof settings): void {

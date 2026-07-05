@@ -1,5 +1,6 @@
 import type { SimEvent } from '../core/events';
 import type { Settings } from '../core/types';
+import { melodyByName } from './melodies';
 
 /**
  * Web Audio synth for bounce tones and ring-break SFX (REQUIREMENTS S-30..S-32).
@@ -16,6 +17,7 @@ import type { Settings } from '../core/types';
 // Pentatonic offsets (semitones) over a base note keep random-ish bounces musical.
 const SCALE = [0, 2, 4, 7, 9];
 const BASE_FREQ = 220; // A3
+const MELODY_BASE_FREQ = 261.63; // C4
 
 function scaleFreq(step: number): number {
   const octave = Math.floor(step / SCALE.length);
@@ -23,10 +25,20 @@ function scaleFreq(step: number): number {
   return BASE_FREQ * Math.pow(2, semis / 12);
 }
 
+function semitoneFreq(base: number, semitones: number): number {
+  return base * Math.pow(2, semitones / 12);
+}
+
 export class Synth {
   private ctx: AudioContext | null = null;
   private master: GainNode | null = null;
   private noiseBuffer: AudioBuffer | null = null;
+  private melodyIndex = 0;
+
+  /** Restart the melody sequence (call when the run restarts). */
+  resetMelody(): void {
+    this.melodyIndex = 0;
+  }
 
   /** Create/resume the AudioContext. Call from a user-gesture handler. */
   unlock(): void {
@@ -57,8 +69,17 @@ export class Synth {
 
   private bounce(speed: number, ringIndex: number, settings: Settings): void {
     if (settings.bounceSound === 'off' || !this.ctx || !this.master) return;
-    const step = settings.bounceSound === 'rising' ? ringIndex : 0;
-    const freq = scaleFreq(step);
+
+    let freq: number;
+    if (settings.bounceSound === 'melody') {
+      const melody = melodyByName(settings.melody);
+      const note = melody.notes[this.melodyIndex % melody.notes.length] ?? 0;
+      this.melodyIndex += 1;
+      freq = semitoneFreq(MELODY_BASE_FREQ, note);
+    } else {
+      const step = settings.bounceSound === 'rising' ? ringIndex : 0;
+      freq = scaleFreq(step);
+    }
 
     const t = this.ctx.currentTime;
     const osc = this.ctx.createOscillator();

@@ -119,6 +119,42 @@ describe('win / lose', () => {
   });
 });
 
+describe('aspect ratio (S-8)', () => {
+  it('sets world dimensions and center per aspect', () => {
+    const portrait = new World({ ...DEFAULT_SETTINGS, aspect: '9:16' });
+    expect(portrait.width).toBe(1080);
+    expect(portrait.height).toBe(1920);
+    expect(portrait.center).toEqual({ x: 540, y: 960 });
+
+    const square = new World({ ...DEFAULT_SETTINGS, aspect: '1:1' });
+    expect(square.width).toBe(1080);
+    expect(square.height).toBe(1080);
+    expect(square.center).toEqual({ x: 540, y: 540 });
+
+    const landscape = new World({ ...DEFAULT_SETTINGS, aspect: '16:9' });
+    expect(landscape.width).toBe(1920);
+    expect(landscape.height).toBe(1080);
+    expect(landscape.center).toEqual({ x: 960, y: 540 });
+  });
+
+  it('recomputes dimensions on reset when aspect changes', () => {
+    const world = new World({ ...DEFAULT_SETTINGS, aspect: '9:16' });
+    world.settings.aspect = '16:9';
+    world.reset();
+    expect(world.width).toBe(1920);
+    expect(world.center.x).toBe(960);
+  });
+
+  it('stays playable and finite in every aspect', () => {
+    for (const aspect of ['9:16', '1:1', '16:9'] as const) {
+      const world = new World({ ...DEFAULT_SETTINGS, aspect });
+      for (let i = 0; i < 600; i++) world.step();
+      expect(Number.isFinite(world.ball.x)).toBe(true);
+      expect(Number.isFinite(world.ball.y)).toBe(true);
+    }
+  });
+});
+
 describe('reset', () => {
   it('restores identical initial state', () => {
     const world = new World(DEFAULT_SETTINGS);

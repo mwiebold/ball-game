@@ -36,6 +36,8 @@ export const PRESETS: readonly Preset[] = [
       initialSpeed: 680,
       countdownSeconds: 60,
       caption: 'The ball has to escape in under 1 minute!',
+      bounceSound: 'melody',
+      melody: 'ode',
     },
   },
   {
