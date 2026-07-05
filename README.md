@@ -2,7 +2,7 @@
 
 A browser-based creator for "satisfying bouncing ball" simulation games — the genre seen in the reference video: a glowing ball bounces under gravity inside a stack of concentric, rotating ring arcs. Each ring has a gap; when the ball slips through, the ring shatters into particles. Bounces play musical notes. The ball must escape every ring before a countdown expires.
 
-Instead of one hard-coded game, this app is a **studio**: a live simulation canvas plus a settings panel of toggles, sliders, and presets that let you design endless variations of the game — and export them as videos or share them as links.
+Instead of one hard-coded game, this app is a **studio**: a live simulation canvas plus a settings panel of toggles, sliders, and presets that let you design endless variations of the game and share them as links.
 
 ## Project status
 
@@ -25,11 +25,11 @@ Instead of one hard-coded game, this app is a **studio**: a live simulation canv
 │      ring arcs with gaps      │  Gravity: 1.0   ──○──│
 │                               │  Balls: 1       ──○──│
 │          ● ← glowing ball     │  ☑ Ring shatter FX   │
-│            with trail         │  ☑ Musical bounces   │
+│            with trail         │  ☑ Bounce sounds     │
 │                               │  ☑ Countdown timer   │
 │                               │  Palette: Rainbow ▾  │
 │   "Escape in under 1 min!"    │  [▶ Run] [🎲 Random] │
-│                               │  [⏺ Record] [🔗 Share]│
+│                               │  [🔗 Share]           │
 └───────────────────────────────┴──────────────────────┘
 ```
 
@@ -38,6 +38,5 @@ Instead of one hard-coded game, this app is a **studio**: a live simulation canv
 - **Vite + TypeScript**, no framework for the sim; small reactive settings panel
 - **Canvas 2D** rendering with glow/trail effects (60 fps target)
 - **Custom physics** (circle-vs-arc collision — exact math beats a general-purpose engine here)
-- **Web Audio API** for synthesized musical bounce notes
-- **MediaRecorder** for one-click WebM video export
+- **Web Audio API** for synthesized bounce tones (melody mode is a post-MVP option)
 - Config serialized to the **URL hash** for sharing; presets in localStorage

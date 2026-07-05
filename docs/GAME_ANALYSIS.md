@@ -42,10 +42,9 @@ requirements can name every mechanic precisely.
 
 ### HUD / meta elements
 - A small **numbered badge** (shows "3", later "2", then "3") drifting in the
-  playfield — a counter (likely balls remaining or a bonus pickup). Ambiguous
-  in the source; we'll implement it as an **optional pickup/counter toggle**.
-- A small **sun/star pickup** appears in some frames — decorative or a bonus
-  object. Also folded into the optional-pickups bucket.
+  playfield, and a small **sun/star object** in some frames. Ambiguous in the
+  source. **Decision (2026-07-05): not replicated** — our game is just the
+  ball bouncing and escaping; no pickups or badges.
 - The countdown itself is implied by the caption ("under 1 minute") and the
   video length (~48 s); some variants of the genre show an on-screen timer.
 
@@ -66,7 +65,7 @@ requirements can name every mechanic precisely.
 3. Per-ring rotation (speed/direction patterns).
 4. Innermost-ring destruction on gap passage → particle burst.
 5. Restitution/speed-floor tuning so the sim never stalls.
-6. Note-per-bounce melody playback; SFX on ring break.
+6. Bounce sounds and ring-break SFX (reference uses note-per-bounce melodies;
+   our MVP uses simple tones, melody mode post-MVP).
 7. Countdown timer, win/lose states, caption text.
-8. Optional floating pickups/counters.
-9. Neon glow rendering: additive trails, ring glow, ember particles.
+8. Neon glow rendering: additive trails, ring glow, ember particles.

@@ -20,10 +20,13 @@ Priorities: **P1** = MVP, **P2** = v1.0, **P3** = nice-to-have.
 | F-4 | P1 | Per-ring rotation with configurable base speed, per-ring speed scaling, and direction pattern (all same / alternating / random). |
 | F-5 | P1 | When a ball fully exits through the innermost surviving ring's gap, that ring is destroyed with a particle burst. |
 | F-6 | P1 | Win state: all rings destroyed (ball "escapes"). Lose state: countdown reaches zero first. End-screen overlay with restart. |
-| F-7 | P1 | Deterministic runs from a seed — same seed + same settings ⇒ identical simulation (needed for shareable configs and re-recording). |
+| F-7 | P1 | Deterministic runs from a seed — same seed + same settings ⇒ identical simulation (needed for shareable configs and exact replays). |
 | F-8 | P2 | Multiple balls simultaneously (each destroys rings independently); optional ball-vs-ball collision. |
-| F-9 | P2 | Optional pickups floating in the arena (e.g. +ball, speed boost, time bonus) as seen as badges/stars in the reference. |
-| F-10 | P3 | Alternative destruction rule modes: e.g. "ring shrinks instead of breaking", "gap widens per bounce", "outermost-first". |
+| F-9 | P3 | Alternative destruction rule modes: e.g. "ring shrinks instead of breaking", "gap widens per bounce", "outermost-first". |
+
+> The floating numbered badge and star pickups seen in the reference video are
+> **intentionally not replicated** (decision 2026-07-05): the game is just the
+> ball bouncing and escaping rings.
 
 ## 2. Settings panel (S) — the "toggles"
 
@@ -72,18 +75,19 @@ indicated). Grouped as they'll appear in the UI.
 | S-25 | P1 | Countdown duration | 10 s–5 min, or off (sandbox) |
 | S-26 | P1 | Caption text | free text (e.g. "The ball has to escape in under 1 minute!") |
 | S-27 | P1 | Timer display | hidden / mm:ss / progress bar |
-| S-28 | P2 | Pickups | none / +ball / time bonus / speed boost, spawn rate |
-| S-29 | P2 | Auto-restart on end | toggle (for ambient/loop displays) |
+| S-28 | P2 | Auto-restart on end | toggle (for ambient/loop displays) |
 
 ### Audio
 | ID | P | Setting | Range / options |
 |----|---|---------|-----------------|
 | S-30 | P1 | Master mute + volume | toggle + slider |
-| S-31 | P1 | Bounce sound mode | off / single tone / **melody mode** (each bounce plays next note) |
-| S-32 | P1 | Built-in melodies | 3–5 bundled note sequences (public-domain tunes + scales/arpeggios) |
+| S-31 | P1 | Bounce sound | off / simple tone (pitch optionally rises per ring cleared) |
+| S-32 | P1 | Ring-break SFX | toggle |
 | S-33 | P2 | Synth voice | sine / square / pluck / marimba-ish |
-| S-34 | P2 | Ring-break SFX | toggle |
+| S-34 | P2 | **Melody mode** — each bounce plays the next note of a sequence | off/on + 3–5 bundled public-domain sequences |
 | S-35 | P3 | Custom melody import (simple note-text or MIDI file) | file input |
+
+> Decision 2026-07-05: MVP audio is simple tones only; melody mode is post-MVP (P2).
 
 ### Presets & sharing
 | ID | P | Setting | Behavior |
@@ -94,15 +98,7 @@ indicated). Grouped as they'll appear in the UI.
 | S-39 | P2 | Save/load user presets | localStorage |
 | S-40 | P2 | Import/export preset JSON | file download/upload |
 
-## 3. Recording & export (F, continued)
-
-| ID | P | Requirement |
-|----|---|-------------|
-| F-11 | P2 | One-click **Record**: capture canvas + audio via MediaRecorder to WebM; start/stop or "record one full run". |
-| F-12 | P3 | Headless-style re-render: re-run a seeded sim while recording at fixed 60 fps for clean exports. |
-| F-13 | P3 | PNG snapshot button. |
-
-## 4. Non-functional (N)
+## 3. Non-functional (N)
 
 | ID | Requirement |
 |----|-------------|
@@ -115,22 +111,22 @@ indicated). Grouped as they'll appear in the UI.
 | N-7 | Settings panel is keyboard-accessible with labeled controls. |
 | N-8 | Sim core is UI-agnostic and unit-testable (collision math, ring destruction, seeding). |
 
-## 5. Explicitly out of scope (for now)
+## 4. Explicitly out of scope
 
+- **Video recording/export** (decision 2026-07-05: not required). Sharing is
+  by config URL instead.
+- **Pickups and the reference video's numbered badge** (decision 2026-07-05:
+  ignore — the game is just the ball bouncing).
 - Backend, accounts, or a community gallery of shared games.
-- Copyrighted song playback (bundled melodies are public-domain/original).
+- Copyrighted song playback (any future bundled melodies are
+  public-domain/original).
 - Native mobile apps; direct TikTok/YouTube upload integration.
 - Genre variants beyond ring-escape (e.g. filling shapes, plinko) — the
   architecture leaves room, but v1 ships one game type done well.
 
-## 6. Open questions for review
+## 5. Resolved review decisions (2026-07-05)
 
-1. **Priority of video export (F-11)** — MVP or fast-follow? It's the genre's
-   whole point (making clips), but it doubles Phase-2 scope.
-2. The reference's **numbered badge ("3"/"2")** — treat as a pickup counter
-   (current plan) or replicate exactly once we know what it is?
-3. Should **melody mode** ship in MVP (currently yes, S-31) or start with
-   simple tones?
-4. Any preference on **framework** for the settings panel? Plan proposes
-   vanilla TS + a tiny reactive store; Preact/Svelte are alternatives if you
-   expect the UI to grow a lot.
+1. Video export: **not required** — removed from scope.
+2. Numbered badge / pickups: **ignored** — no pickup system.
+3. Melody mode: **not in MVP** — simple tones first; melody mode is P2 (S-34).
+4. Physics: **custom engine confirmed** (no Matter.js/Rapier).
