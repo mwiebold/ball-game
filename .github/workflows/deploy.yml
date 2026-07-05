@@ -37,6 +37,10 @@ jobs:
       - run: npm ci
       - run: npm run build
       - uses: actions/configure-pages@v5
+        # Auto-enable Pages on the first deploy via the pages:write permission
+        # (works now that the repo is public), so no manual Settings toggle.
+        with:
+          enablement: true
       - uses: actions/upload-pages-artifact@v3
         with:
           path: dist
