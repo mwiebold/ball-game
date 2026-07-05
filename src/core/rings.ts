@@ -55,8 +55,15 @@ function initialGapCenter(settings: Settings, index: number, rng: Rng): number {
 /**
  * Build the ring stack from settings. Ring 0 is innermost. Gap size gets a
  * per-ring jitter; hue sweeps the spectrum across the stack for rendering.
+ *
+ * Coherent gap arrangements ('aligned', 'spiral') rotate rigidly — every ring
+ * shares the base rotation speed — so the pattern stays recognizable as it
+ * spins (an aligned slot or a whirlpool spiral) instead of being scrambled
+ * within a moment by differing per-ring speeds. The 'random' arrangement keeps
+ * the per-ring rotation pattern, where scattered drift is the intent.
  */
 export function buildRings(settings: Settings, rng: Rng): Ring[] {
+  const rigid = settings.gapAlignment === 'aligned' || settings.gapAlignment === 'spiral';
   const rings: Ring[] = [];
   for (let i = 0; i < settings.ringCount; i++) {
     const gapDeg =
@@ -68,7 +75,7 @@ export function buildRings(settings: Settings, rng: Rng): Ring[] {
       thickness: settings.ringThickness,
       gapCenter: initialGapCenter(settings, i, rng),
       gapHalf,
-      omega: ringOmega(settings, i, rng),
+      omega: rigid ? settings.rotationSpeed : ringOmega(settings, i, rng),
       hue: (360 * i) / Math.max(1, settings.ringCount),
     });
   }

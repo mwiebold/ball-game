@@ -52,6 +52,41 @@ describe('buildRings', () => {
     const b = buildRings(DEFAULT_SETTINGS, new Rng(5));
     expect(a).toEqual(b);
   });
+
+  it('spiral arrangement offsets each ring gap progressively', () => {
+    const rings = buildRings({ ...DEFAULT_SETTINGS, gapAlignment: 'spiral' }, new Rng(1));
+    // Gap centers step by a fixed amount per ring (a spiral), not all equal.
+    expect(rings[1]!.gapCenter).not.toBeCloseTo(rings[0]!.gapCenter, 3);
+    expect(rings[2]!.gapCenter - rings[1]!.gapCenter).toBeCloseTo(
+      rings[1]!.gapCenter - rings[0]!.gapCenter,
+      3,
+    );
+  });
+
+  it('coherent alignments (aligned, spiral) rotate rigidly so the pattern persists', () => {
+    for (const gapAlignment of ['aligned', 'spiral'] as const) {
+      const rings = buildRings(
+        { ...DEFAULT_SETTINGS, gapAlignment, rotationPattern: 'alternating', rotationSpeed: 0.9 },
+        new Rng(1),
+      );
+      // Every ring shares the base speed -> the arrangement spins as a rigid body.
+      for (const ring of rings) expect(ring.omega).toBe(0.9);
+    }
+  });
+
+  it('random alignment keeps the per-ring rotation pattern', () => {
+    const rings = buildRings(
+      {
+        ...DEFAULT_SETTINGS,
+        gapAlignment: 'random',
+        rotationPattern: 'alternating',
+        rotationSpeed: 1,
+      },
+      new Rng(1),
+    );
+    // Alternating pattern -> adjacent rings differ in omega.
+    expect(rings[0]!.omega).not.toBe(rings[1]!.omega);
+  });
 });
 
 describe('ringOmega patterns', () => {
