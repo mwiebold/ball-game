@@ -6,33 +6,47 @@ export interface PanelCallbacks {
   onLiveChange: () => void;
   /** A structural setting changed — rebuild the world from the seed. */
   onStructuralChange: () => void;
-  onPreset: (name: string) => void;
+  /** A bundled ("b:name") or user ("u:name") preset was selected. */
+  onPreset: (value: string) => void;
   onRandomize: () => void;
   onShare: () => void;
   onRestart: () => void;
+  onSavePreset: () => void;
+  onDeletePreset: (value: string) => void;
+  onExport: () => void;
+  onImportText: (text: string) => void;
 }
 
 /**
  * The settings panel, generated entirely from SCHEMA. It mutates the shared
  * `settings` object in place (the same object the World reads) and notifies the
- * host whether the change was live or structural. Preset/Randomize/Share flows
- * are owned by the host, which mutates `settings` then calls `refresh()`.
+ * host whether the change was live or structural. Preset/Randomize/Share/import
+ * flows are owned by the host, which mutates `settings` then calls `refresh()`.
+ *
+ * Controls are built with associated <label for> elements and the panel exposes
+ * proper labels/roles for keyboard and screen-reader use.
  */
 export class Panel {
   private readonly inputs = new Map<string, HTMLInputElement | HTMLSelectElement>();
   private readonly readouts = new Map<string, HTMLElement>();
+  private presetSelect!: HTMLSelectElement;
+  private fileInput!: HTMLInputElement;
 
   constructor(
     root: HTMLElement,
     private readonly settings: Settings,
     private readonly cb: PanelCallbacks,
-    presetNames: readonly string[],
+    private readonly bundledNames: readonly string[],
+    userNames: readonly string[],
   ) {
+    root.setAttribute('role', 'region');
+    root.setAttribute('aria-label', 'Game settings');
     root.innerHTML = '';
-    root.appendChild(this.buildHeader(presetNames));
+    root.appendChild(this.buildHeader());
     for (const group of GROUPS) {
       root.appendChild(this.buildGroup(group));
     }
+    this.refreshPresets(userNames);
     this.refresh();
   }
 
@@ -51,16 +65,51 @@ export class Panel {
     }
   }
 
+  /** Rebuild the preset dropdown from bundled + user preset names. */
+  refreshPresets(userNames: readonly string[]): void {
+    this.presetSelect.innerHTML = '';
+
+    const placeholder = document.createElement('option');
+    placeholder.value = '';
+    placeholder.textContent = 'Choose a preset…';
+    placeholder.disabled = true;
+    placeholder.selected = true;
+    this.presetSelect.appendChild(placeholder);
+
+    const bundled = document.createElement('optgroup');
+    bundled.label = 'Presets';
+    for (const name of this.bundledNames) {
+      bundled.appendChild(this.presetOption(`b:${name}`, name));
+    }
+    this.presetSelect.appendChild(bundled);
+
+    if (userNames.length > 0) {
+      const mine = document.createElement('optgroup');
+      mine.label = 'My presets';
+      for (const name of userNames) {
+        mine.appendChild(this.presetOption(`u:${name}`, name));
+      }
+      this.presetSelect.appendChild(mine);
+    }
+  }
+
   /** Flash a transient status message (e.g. "Link copied"). */
   flashStatus(message: string): void {
     const el = document.getElementById('panel-status');
     if (!el) return;
     el.textContent = message;
     el.classList.add('visible');
-    window.setTimeout(() => el.classList.remove('visible'), 1600);
+    window.setTimeout(() => el.classList.remove('visible'), 1800);
   }
 
-  private buildHeader(presetNames: readonly string[]): HTMLElement {
+  private presetOption(value: string, label: string): HTMLOptionElement {
+    const o = document.createElement('option');
+    o.value = value;
+    o.textContent = label;
+    return o;
+  }
+
+  private buildHeader(): HTMLElement {
     const header = document.createElement('div');
     header.className = 'panel-header';
 
@@ -68,32 +117,71 @@ export class Panel {
     title.textContent = 'Ball Escape Studio';
     header.appendChild(title);
 
-    // Preset dropdown.
-    const presetRow = document.createElement('label');
+    // Preset dropdown + delete.
+    const presetRow = document.createElement('div');
     presetRow.className = 'preset-row';
-    presetRow.textContent = 'Preset';
-    const select = document.createElement('select');
-    for (const name of presetNames) {
-      const opt = document.createElement('option');
-      opt.value = name;
-      opt.textContent = name;
-      select.appendChild(opt);
-    }
-    select.addEventListener('change', () => this.cb.onPreset(select.value));
-    presetRow.appendChild(select);
+    const presetLabel = document.createElement('label');
+    presetLabel.htmlFor = 'preset-select';
+    presetLabel.textContent = 'Preset';
+    presetRow.appendChild(presetLabel);
+
+    const selectWrap = document.createElement('div');
+    selectWrap.className = 'preset-select-wrap';
+    this.presetSelect = document.createElement('select');
+    this.presetSelect.id = 'preset-select';
+    this.presetSelect.addEventListener('change', () => {
+      if (this.presetSelect.value) this.cb.onPreset(this.presetSelect.value);
+    });
+    selectWrap.appendChild(this.presetSelect);
+    selectWrap.appendChild(
+      this.button('🗑', 'Delete selected user preset', () =>
+        this.cb.onDeletePreset(this.presetSelect.value),
+      ),
+    );
+    presetRow.appendChild(selectWrap);
     header.appendChild(presetRow);
 
-    // Action buttons.
-    const actions = document.createElement('div');
-    actions.className = 'panel-actions';
-    actions.appendChild(this.button('🎲 Randomize', () => this.cb.onRandomize()));
-    actions.appendChild(this.button('🔗 Share', () => this.cb.onShare()));
-    actions.appendChild(this.button('↻ Replay', () => this.cb.onRestart()));
-    header.appendChild(actions);
+    // Action buttons, two rows.
+    const actions1 = document.createElement('div');
+    actions1.className = 'panel-actions';
+    actions1.appendChild(
+      this.button('🎲 Randomize', 'Randomize settings', () => this.cb.onRandomize()),
+    );
+    actions1.appendChild(this.button('🔗 Share', 'Copy a shareable link', () => this.cb.onShare()));
+    actions1.appendChild(this.button('↻ Replay', 'Restart the run', () => this.cb.onRestart()));
+    header.appendChild(actions1);
+
+    const actions2 = document.createElement('div');
+    actions2.className = 'panel-actions';
+    actions2.appendChild(
+      this.button('💾 Save', 'Save current settings as a preset', () => this.cb.onSavePreset()),
+    );
+    actions2.appendChild(
+      this.button('⬇ Export', 'Download settings as JSON', () => this.cb.onExport()),
+    );
+    actions2.appendChild(
+      this.button('⬆ Import', 'Import settings from a JSON file', () => this.fileInput.click()),
+    );
+    header.appendChild(actions2);
+
+    // Hidden file input for Import.
+    this.fileInput = document.createElement('input');
+    this.fileInput.type = 'file';
+    this.fileInput.accept = 'application/json,.json';
+    this.fileInput.style.display = 'none';
+    this.fileInput.addEventListener('change', () => {
+      const file = this.fileInput.files?.[0];
+      if (!file) return;
+      void file.text().then((text) => this.cb.onImportText(text));
+      this.fileInput.value = '';
+    });
+    header.appendChild(this.fileInput);
 
     const status = document.createElement('div');
     status.id = 'panel-status';
     status.className = 'panel-status';
+    status.setAttribute('role', 'status');
+    status.setAttribute('aria-live', 'polite');
     header.appendChild(status);
 
     return header;
@@ -113,12 +201,16 @@ export class Panel {
   }
 
   private buildControl(control: Control): HTMLElement {
+    const id = `ctrl-${control.key}`;
     const wrap = document.createElement('div');
     wrap.className = 'control';
 
+    const input = this.buildInput(control, id);
+
     const labelRow = document.createElement('div');
     labelRow.className = 'control-label';
-    const label = document.createElement('span');
+    const label = document.createElement('label');
+    label.htmlFor = id;
     label.textContent = control.label;
     labelRow.appendChild(label);
 
@@ -128,8 +220,20 @@ export class Panel {
       this.readouts.set(control.key, readout);
       labelRow.appendChild(readout);
     }
-    wrap.appendChild(labelRow);
 
+    if (control.kind === 'toggle') {
+      // Label and checkbox share one row.
+      wrap.classList.add('control-toggle');
+      wrap.appendChild(labelRow);
+      wrap.appendChild(input);
+    } else {
+      wrap.appendChild(labelRow);
+      wrap.appendChild(input);
+    }
+    return wrap;
+  }
+
+  private buildInput(control: Control, id: string): HTMLInputElement | HTMLSelectElement {
     let input: HTMLInputElement | HTMLSelectElement;
     if (control.kind === 'select') {
       const sel = document.createElement('select');
@@ -148,7 +252,6 @@ export class Panel {
     } else if (control.kind === 'toggle') {
       const inp = document.createElement('input');
       inp.type = 'checkbox';
-      wrap.classList.add('control-toggle');
       input = inp;
     } else {
       const inp = document.createElement('input');
@@ -158,12 +261,12 @@ export class Panel {
       inp.step = String(control.step);
       input = inp;
     }
+    input.id = id;
 
     const eventName = control.kind === 'toggle' || control.kind === 'select' ? 'change' : 'input';
     input.addEventListener(eventName, () => this.applyChange(control, input));
     this.inputs.set(control.key, input);
-    wrap.appendChild(input);
-    return wrap;
+    return input;
   }
 
   private applyChange(control: Control, input: HTMLInputElement | HTMLSelectElement): void {
@@ -192,10 +295,12 @@ export class Panel {
     }
   }
 
-  private button(text: string, onClick: () => void): HTMLButtonElement {
+  private button(text: string, ariaLabel: string, onClick: () => void): HTMLButtonElement {
     const b = document.createElement('button');
     b.type = 'button';
     b.textContent = text;
+    b.setAttribute('aria-label', ariaLabel);
+    b.title = ariaLabel;
     b.addEventListener('click', onClick);
     return b;
   }

@@ -89,6 +89,22 @@ export function settingsFromHash(hash: string): Settings | null {
   return decodeSettings(encoded);
 }
 
+/** Pretty-printed JSON for file export (REQUIREMENTS S-40). */
+export function settingsToJson(settings: Settings): string {
+  return JSON.stringify(settings, null, 2);
+}
+
+/** Parse and sanitize settings from imported JSON text, or null if invalid. */
+export function settingsFromJson(text: string): Settings | null {
+  try {
+    const parsed: unknown = JSON.parse(text);
+    if (typeof parsed !== 'object' || parsed === null) return null;
+    return sanitizeSettings(parsed);
+  } catch {
+    return null;
+  }
+}
+
 // --- helpers ---
 
 // Narrow assignment helpers keep the union-typed Settings sound without a broad

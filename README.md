@@ -6,13 +6,33 @@ Instead of one hard-coded game, this app is a **studio**: a live simulation canv
 
 ## Project status
 
-📋 **Planning phase.** No code yet — documentation is being reviewed first.
+✅ **v1.0 built** (Phases 0–4 complete). A playable, deterministic ball-escape
+sim with a full schema-driven settings panel, presets, share links, neon
+rendering, audio, and a GitHub Pages deploy workflow.
 
 | Document | Purpose |
 |---|---|
 | [docs/GAME_ANALYSIS.md](docs/GAME_ANALYSIS.md) | Frame-by-frame breakdown of the reference video's mechanics |
 | [docs/REQUIREMENTS.md](docs/REQUIREMENTS.md) | Functional and non-functional requirements, full settings catalog |
 | [docs/BUILD_PLAN.md](docs/BUILD_PLAN.md) | Architecture, tech choices, phased milestones |
+
+## Develop
+
+```bash
+npm install
+npm run dev        # local dev server
+npm test           # unit tests (Vitest)
+npm run lint       # ESLint + Prettier
+npm run build      # production build to dist/
+```
+
+## Deploy
+
+The site is a static bundle (no backend). A GitHub Actions workflow
+(`.github/workflows/deploy.yml`) builds and publishes to GitHub Pages on push
+to the default branch. **One-time setup:** in the repo, *Settings → Pages →
+Build and deployment → Source: **GitHub Actions***. The Vite `base` is relative,
+so it works under a project subpath.
 
 ## The pitch in one screen
 

@@ -81,11 +81,15 @@ ring-break SFX behind a user-gesture gate; caption + timer HUD styling.
 **Done when:** side-by-side with the source video, a "Reference video" preset
 run is a convincing visual match; audio behind user-gesture gate.
 
-### Phase 4 — Share & polish (v1.0)
+### Phase 4 — Share & polish (v1.0) ✅ done
 User presets in localStorage; preset JSON import/export; mobile drawer layout
-& a11y pass; GitHub Pages deploy.
+& a11y pass (associated labels, focus-visible, ARIA); GitHub Pages deploy
+workflow.
 **Done when:** a shared URL reproduces the exact run on another machine; app
 usable on a phone; deployed URL live.
+*Note:* the deploy workflow is in place; going live needs the repo's one-time
+Pages setting (Settings → Pages → Source: GitHub Actions) and a push to the
+default branch.
 
 ### Phase 5 — Stretch (P2/P3 backlog, post-review)
 Melody mode with bundled sequences (S-34) and custom melody import; multiple

@@ -5,6 +5,8 @@ import {
   sanitizeSettings,
   buildShareUrl,
   settingsFromHash,
+  settingsToJson,
+  settingsFromJson,
 } from './share';
 import { DEFAULT_SETTINGS } from '../core/settings';
 import { PRESETS } from './presets';
@@ -87,5 +89,21 @@ describe('URL helpers', () => {
   it('returns null when the hash has no config', () => {
     expect(settingsFromHash('')).toBeNull();
     expect(settingsFromHash('#other=1')).toBeNull();
+  });
+});
+
+describe('JSON import / export (S-40)', () => {
+  it('round-trips through pretty JSON', () => {
+    const custom = { ...DEFAULT_SETTINGS, seed: 777, caption: 'Hi' };
+    const json = settingsToJson(custom);
+    expect(json).toContain('\n'); // pretty-printed
+    expect(settingsFromJson(json)).toEqual(custom);
+  });
+
+  it('sanitizes imported JSON and rejects malformed text', () => {
+    expect(settingsFromJson('{ "ringCount": 9999 }')?.ringCount).toBe(40);
+    expect(settingsFromJson('not json')).toBeNull();
+    expect(settingsFromJson('42')).toBeNull();
+    expect(settingsFromJson('null')).toBeNull();
   });
 });

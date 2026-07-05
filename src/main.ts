@@ -8,13 +8,15 @@ import { Synth } from './audio/synth';
 import { Panel } from './ui/panel';
 import { PRESETS, presetByName } from './config/presets';
 import { randomizeSettings } from './config/randomize';
-import { buildShareUrl, settingsFromHash } from './config/share';
+import { buildShareUrl, settingsFromHash, settingsFromJson, settingsToJson } from './config/share';
+import { UserPresetStore } from './config/userPresets';
 
 /**
- * Phase 2 entry point: wires the sim + renderer to the schema-driven settings
- * panel, presets, seeded Randomize, and share-by-URL. The `settings` object is
- * the single source of truth — the World reads it, the Panel mutates it, and
- * preset/randomize/share flows replace or serialize it.
+ * App entry point: wires the sim, renderer, and audio to the schema-driven
+ * settings panel, presets (bundled + user), Randomize, share-by-URL, JSON
+ * import/export, and the mobile drawer. The `settings` object is the single
+ * source of truth — the World reads it, the Panel mutates it, and
+ * preset/randomize/share/import flows replace or serialize it.
  */
 
 const ASPECT = 9 / 16;
@@ -47,12 +49,26 @@ function resize(): void {
   canvas.height = Math.round(cssH * dpr);
 }
 
+/** localStorage if usable (some browsers throw on access in private mode). */
+function safeLocalStorage(): Storage | null {
+  try {
+    const s = window.localStorage;
+    const probe = '__ballEscapeProbe__';
+    s.setItem(probe, '1');
+    s.removeItem(probe);
+    return s;
+  } catch {
+    return null;
+  }
+}
+
 // Initial settings: from a shared URL hash if present, else defaults.
 const settings = settingsFromHash(window.location.hash) ?? { ...DEFAULT_SETTINGS };
 
 const world = new World(settings);
 const renderer = new Renderer();
 const synth = new Synth();
+const userPresets = new UserPresetStore(safeLocalStorage());
 
 function rebuild(): void {
   world.reset();
@@ -77,6 +93,31 @@ async function share(): Promise<void> {
   }
 }
 
+/** Resolve "b:Name" | "u:Name" to its settings. */
+function settingsForPresetValue(value: string): typeof settings | null {
+  const [kind, ...rest] = value.split(':');
+  const name = rest.join(':');
+  if (kind === 'b') return presetByName(name)?.settings ?? null;
+  if (kind === 'u') return userPresets.list().find((p) => p.name === name)?.settings ?? null;
+  return null;
+}
+
+function refreshPresetList(): void {
+  panel.refreshPresets(userPresets.list().map((p) => p.name));
+}
+
+function downloadJson(filename: string, text: string): void {
+  const blob = new Blob([text], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = filename;
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  URL.revokeObjectURL(url);
+}
+
 const panel = new Panel(
   panelEl,
   settings,
@@ -85,9 +126,9 @@ const panel = new Panel(
       // The sim reads live settings every step; nothing to rebuild.
     },
     onStructuralChange: rebuild,
-    onPreset: (name) => {
-      const preset = presetByName(name);
-      if (preset) loadSettings(preset.settings);
+    onPreset: (value) => {
+      const next = settingsForPresetValue(value);
+      if (next) loadSettings(next);
     },
     onRandomize: () => {
       const metaSeed = Math.floor(Math.random() * 1_000_000);
@@ -95,9 +136,52 @@ const panel = new Panel(
     },
     onShare: () => void share(),
     onRestart: rebuild,
+    onSavePreset: () => {
+      const name = window.prompt('Save preset as:');
+      if (name === null) return;
+      if (userPresets.save(name, { ...settings })) {
+        refreshPresetList();
+        panel.flashStatus(`Saved "${name.trim()}"`);
+      } else {
+        panel.flashStatus('Enter a preset name');
+      }
+    },
+    onDeletePreset: (value) => {
+      const [kind, ...rest] = value.split(':');
+      if (kind !== 'u') {
+        panel.flashStatus('Select one of your presets to delete');
+        return;
+      }
+      const name = rest.join(':');
+      userPresets.remove(name);
+      refreshPresetList();
+      panel.flashStatus(`Deleted "${name}"`);
+    },
+    onExport: () => {
+      downloadJson('ball-escape-preset.json', settingsToJson(settings));
+      panel.flashStatus('Exported settings JSON');
+    },
+    onImportText: (text) => {
+      const imported = settingsFromJson(text);
+      if (imported) {
+        loadSettings(imported);
+        panel.flashStatus('Imported settings');
+      } else {
+        panel.flashStatus('Invalid settings file');
+      }
+    },
   },
   PRESETS.map((p) => p.name),
+  userPresets.list().map((p) => p.name),
 );
+
+// Mobile: toggle the settings drawer.
+const panelToggle = document.querySelector<HTMLButtonElement>('#panel-toggle');
+panelToggle?.addEventListener('click', () => {
+  const open = document.body.classList.toggle('panel-open');
+  panelToggle.setAttribute('aria-expanded', String(open));
+  resize();
+});
 
 // Unlock audio on the first user gesture (browser autoplay policy, N-6).
 function unlockAudio(): void {

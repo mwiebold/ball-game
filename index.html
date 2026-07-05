@@ -8,8 +8,17 @@
   <body>
     <div id="app">
       <div id="stage">
-        <canvas id="game"></canvas>
+        <canvas id="game" aria-label="Ball escape game canvas" role="img"></canvas>
       </div>
+      <button
+        id="panel-toggle"
+        type="button"
+        aria-label="Toggle settings panel"
+        aria-controls="panel"
+        aria-expanded="true"
+      >
+        ⚙
+      </button>
       <aside id="panel"></aside>
     </div>
     <script type="module" src="/src/main.ts"></script>
