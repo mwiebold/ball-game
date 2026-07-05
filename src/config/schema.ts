@@ -13,7 +13,7 @@ import type { Settings } from '../core/types';
  * the seed for it to take effect.
  */
 
-export type ControlKind = 'range' | 'int' | 'select' | 'text';
+export type ControlKind = 'range' | 'int' | 'select' | 'text' | 'toggle';
 
 interface BaseControl {
   key: keyof Settings;
@@ -40,9 +40,13 @@ export interface TextControl extends BaseControl {
   maxLength: number;
 }
 
-export type Control = NumberControl | SelectControl | TextControl;
+export interface ToggleControl extends BaseControl {
+  kind: 'toggle';
+}
 
-export const GROUPS = ['Arena & Rings', 'Ball & Physics', 'Rules'] as const;
+export type Control = NumberControl | SelectControl | TextControl | ToggleControl;
+
+export const GROUPS = ['Arena & Rings', 'Ball & Physics', 'Rules', 'Visuals', 'Audio'] as const;
 export type GroupName = (typeof GROUPS)[number];
 
 export const SCHEMA: readonly Control[] = [
@@ -227,6 +231,81 @@ export const SCHEMA: readonly Control[] = [
     step: 1,
     live: false,
   },
+
+  // --- Visuals ---
+  {
+    key: 'palette',
+    group: 'Visuals',
+    label: 'Palette',
+    kind: 'select',
+    live: true,
+    options: [
+      { value: 'rainbowAngle', label: 'Rainbow (by angle)' },
+      { value: 'rainbowRing', label: 'Rainbow (by ring)' },
+      { value: 'mono', label: 'Mono' },
+      { value: 'fire', label: 'Fire' },
+      { value: 'ice', label: 'Ice' },
+    ],
+  },
+  {
+    key: 'glow',
+    group: 'Visuals',
+    label: 'Glow',
+    kind: 'range',
+    min: 0,
+    max: 1,
+    step: 0.05,
+    live: true,
+  },
+  { key: 'trail', group: 'Visuals', label: 'Ball trail', kind: 'toggle', live: true },
+  {
+    key: 'trailLength',
+    group: 'Visuals',
+    label: 'Trail length',
+    kind: 'int',
+    min: 0,
+    max: 60,
+    step: 1,
+    live: true,
+  },
+  { key: 'particles', group: 'Visuals', label: 'Shatter particles', kind: 'toggle', live: true },
+  {
+    key: 'particleIntensity',
+    group: 'Visuals',
+    label: 'Particle amount',
+    kind: 'range',
+    min: 0,
+    max: 1,
+    step: 0.05,
+    live: true,
+  },
+  { key: 'impactFlare', group: 'Visuals', label: 'Impact flare', kind: 'toggle', live: true },
+
+  // --- Audio ---
+  { key: 'soundEnabled', group: 'Audio', label: 'Sound', kind: 'toggle', live: true },
+  {
+    key: 'volume',
+    group: 'Audio',
+    label: 'Volume',
+    kind: 'range',
+    min: 0,
+    max: 1,
+    step: 0.05,
+    live: true,
+  },
+  {
+    key: 'bounceSound',
+    group: 'Audio',
+    label: 'Bounce sound',
+    kind: 'select',
+    live: true,
+    options: [
+      { value: 'off', label: 'Off' },
+      { value: 'tone', label: 'Single tone' },
+      { value: 'rising', label: 'Rising per ring' },
+    ],
+  },
+  { key: 'ringBreakSound', group: 'Audio', label: 'Ring-break SFX', kind: 'toggle', live: true },
 ];
 
 /** Look up a control by its settings key. */

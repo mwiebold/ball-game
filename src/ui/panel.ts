@@ -42,7 +42,11 @@ export class Panel {
       const input = this.inputs.get(control.key);
       if (!input) continue;
       const value = this.settings[control.key];
-      input.value = String(value);
+      if (control.kind === 'toggle' && input instanceof HTMLInputElement) {
+        input.checked = Boolean(value);
+      } else {
+        input.value = String(value);
+      }
       this.updateReadout(control, value);
     }
   }
@@ -118,7 +122,7 @@ export class Panel {
     label.textContent = control.label;
     labelRow.appendChild(label);
 
-    if (control.kind !== 'text') {
+    if (control.kind === 'range' || control.kind === 'int') {
       const readout = document.createElement('span');
       readout.className = 'control-value';
       this.readouts.set(control.key, readout);
@@ -141,6 +145,11 @@ export class Panel {
       inp.type = 'text';
       inp.maxLength = control.maxLength;
       input = inp;
+    } else if (control.kind === 'toggle') {
+      const inp = document.createElement('input');
+      inp.type = 'checkbox';
+      wrap.classList.add('control-toggle');
+      input = inp;
     } else {
       const inp = document.createElement('input');
       inp.type = 'range';
@@ -150,17 +159,19 @@ export class Panel {
       input = inp;
     }
 
-    input.addEventListener('input', () => this.applyChange(control, input));
+    const eventName = control.kind === 'toggle' || control.kind === 'select' ? 'change' : 'input';
+    input.addEventListener(eventName, () => this.applyChange(control, input));
     this.inputs.set(control.key, input);
     wrap.appendChild(input);
     return wrap;
   }
 
   private applyChange(control: Control, input: HTMLInputElement | HTMLSelectElement): void {
-    const raw = input.value;
-    let value: number | string = raw;
-    if (control.kind === 'range') value = parseFloat(raw);
-    else if (control.kind === 'int') value = Math.round(parseFloat(raw));
+    let value: number | string | boolean = input.value;
+    if (control.kind === 'range') value = parseFloat(input.value);
+    else if (control.kind === 'int') value = Math.round(parseFloat(input.value));
+    else if (control.kind === 'toggle')
+      value = input instanceof HTMLInputElement ? input.checked : false;
 
     // The schema guarantees the key/kind pairing, so this write is sound.
     (this.settings as unknown as Record<string, unknown>)[control.key] = value;

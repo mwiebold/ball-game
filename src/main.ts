@@ -4,6 +4,7 @@ import { World, STEP_SECONDS } from './core/sim';
 import { DEFAULT_SETTINGS } from './core/settings';
 import { Rng } from './core/rng';
 import { Renderer } from './render/renderer';
+import { Synth } from './audio/synth';
 import { Panel } from './ui/panel';
 import { PRESETS, presetByName } from './config/presets';
 import { randomizeSettings } from './config/randomize';
@@ -51,6 +52,7 @@ const settings = settingsFromHash(window.location.hash) ?? { ...DEFAULT_SETTINGS
 
 const world = new World(settings);
 const renderer = new Renderer();
+const synth = new Synth();
 
 function rebuild(): void {
   world.reset();
@@ -97,6 +99,13 @@ const panel = new Panel(
   PRESETS.map((p) => p.name),
 );
 
+// Unlock audio on the first user gesture (browser autoplay policy, N-6).
+function unlockAudio(): void {
+  synth.unlock();
+}
+window.addEventListener('pointerdown', unlockAudio);
+window.addEventListener('keydown', unlockAudio);
+
 // Restart a finished run by clicking the canvas or pressing R.
 canvas.addEventListener('pointerdown', () => {
   if (!world.isPlaying) rebuild();
@@ -111,10 +120,14 @@ window.addEventListener('resize', resize);
 const loop = new GameLoop({
   stepSeconds: STEP_SECONDS,
   step: () => {
-    world.step();
+    const events = world.step();
+    for (const event of events) {
+      renderer.handleEvent(event, world);
+      synth.handle(event, settings);
+    }
   },
-  render: () => {
-    renderer.draw(ctx, world);
+  render: (frameSeconds) => {
+    renderer.draw(ctx, world, frameSeconds);
   },
 });
 

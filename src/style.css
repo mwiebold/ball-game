@@ -160,6 +160,23 @@ button:hover {
   width: 100%;
 }
 
+.control-toggle {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.control-toggle .control-label {
+  margin-bottom: 0;
+}
+
+.control-toggle input[type='checkbox'] {
+  width: 18px;
+  height: 18px;
+  accent-color: var(--accent);
+  cursor: pointer;
+}
+
 /* Narrow screens: stack the panel under the stage (full mobile drawer is Phase 4). */
 @media (max-width: 900px) {
   #app {

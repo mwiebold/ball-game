@@ -32,4 +32,17 @@ export const DEFAULT_SETTINGS: Settings = {
 
   countdownSeconds: 60,
   caption: 'The ball has to escape in under 1 minute!',
+
+  palette: 'rainbowAngle',
+  glow: 0.6,
+  trail: true,
+  trailLength: 24,
+  particles: true,
+  particleIntensity: 0.7,
+  impactFlare: true,
+
+  soundEnabled: true,
+  volume: 0.5,
+  bounceSound: 'rising',
+  ringBreakSound: true,
 };

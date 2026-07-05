@@ -46,6 +46,11 @@ export function sanitizeSettings(input: unknown): Settings {
         assignString(out, control.key, raw.slice(0, control.maxLength));
         break;
       }
+      case 'toggle': {
+        if (typeof raw !== 'boolean') continue;
+        assignBoolean(out, control.key, raw);
+        break;
+      }
     }
   }
   return out;
@@ -93,6 +98,9 @@ function assignNumber(settings: Settings, key: keyof Settings, value: number): v
   (settings as unknown as Record<string, unknown>)[key] = value;
 }
 function assignString(settings: Settings, key: keyof Settings, value: string): void {
+  (settings as unknown as Record<string, unknown>)[key] = value;
+}
+function assignBoolean(settings: Settings, key: keyof Settings, value: boolean): void {
   (settings as unknown as Record<string, unknown>)[key] = value;
 }
 

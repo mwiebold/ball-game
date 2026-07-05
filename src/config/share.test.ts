@@ -59,6 +59,15 @@ describe('sanitizeSettings (untrusted input hardening)', () => {
     expect(sanitizeSettings({ caption: long }).caption.length).toBe(120);
   });
 
+  it('accepts boolean toggles and rejects non-booleans', () => {
+    expect(sanitizeSettings({ trail: false }).trail).toBe(false);
+    expect(sanitizeSettings({ particles: false }).particles).toBe(false);
+    // A non-boolean is ignored, keeping the default.
+    expect(sanitizeSettings({ soundEnabled: 'yes' }).soundEnabled).toBe(
+      DEFAULT_SETTINGS.soundEnabled,
+    );
+  });
+
   it('ignores unknown keys and non-number numerics', () => {
     const s = sanitizeSettings({ bogus: 5, gravity: 'fast' });
     expect(s.gravity).toBe(DEFAULT_SETTINGS.gravity);

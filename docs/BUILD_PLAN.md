@@ -55,29 +55,29 @@ Continuous check on the radial coordinate prevents tunneling at high speed.
 
 ## 3. Phases
 
-### Phase 0 — Scaffold (small)
+### Phase 0 — Scaffold (small) ✅ done
 Vite + TS + Vitest + ESLint/Prettier, CI workflow, blank canvas render loop.
 **Done when:** `npm run dev` shows a 60 fps clear-screen loop; CI green.
 
-### Phase 1 — Playable core sim (MVP heart)
+### Phase 1 — Playable core sim (MVP heart) ✅ done
 Seeded RNG; ball + gravity + fixed timestep; ring stack with gaps & rotation;
 circle-vs-arc collision; innermost-ring destruction; win/lose + countdown;
 basic flat-color rendering; unit tests for collision & destruction order.
 **Done when:** the reference game is recognizably playable with hard-coded
 settings; same seed replays identically; tests pass.
 
-### Phase 2 — Settings panel & schema (the "creator" part)
+### Phase 2 — Settings panel & schema (the "creator" part) ✅ done
 Settings schema (all P1 settings from REQUIREMENTS §2); auto-generated panel;
 live-apply vs restart-required handling; Randomize (seeded); preset dropdown
 with "Reference video"; URL-hash share links.
 **Done when:** every P1 setting works from the UI and a shared URL reproduces
 the exact run.
 
-### Phase 3 — Look & sound (make it satisfying)
-Rainbow-by-angle palette + alternates; glow, ball trail, impact flare; ember
-particle bursts with budget-based degradation (N-2); Web Audio synth with
-simple bounce tones (S-31); ring-break SFX; caption + timer HUD styling to
-match the reference.
+### Phase 3 — Look & sound (make it satisfying) ✅ done
+Rainbow-by-angle palette (+ by-ring/mono/fire/ice); additive glow, ball trail,
+impact flare; ember particle bursts with budget-based degradation (N-2); Web
+Audio synth with simple bounce tones (S-31, incl. rising-per-ring) and
+ring-break SFX behind a user-gesture gate; caption + timer HUD styling.
 **Done when:** side-by-side with the source video, a "Reference video" preset
 run is a convincing visual match; audio behind user-gesture gate.
 

@@ -11,6 +11,12 @@ export type RotationPattern = 'uniform' | 'alternating' | 'scale' | 'random';
 /** Initial gap placement across rings (REQUIREMENTS S-7). */
 export type GapAlignment = 'aligned' | 'spiral' | 'random';
 
+/** Color palette for rings/ball (REQUIREMENTS S-17). */
+export type PaletteName = 'rainbowAngle' | 'rainbowRing' | 'mono' | 'fire' | 'ice';
+
+/** Bounce sound mode (REQUIREMENTS S-31). */
+export type BounceSound = 'off' | 'tone' | 'rising';
+
 /**
  * Full simulation settings. Phase 1 hard-codes a default; Phase 2 drives these
  * from the settings panel schema. Distances are in world units (see
@@ -42,6 +48,21 @@ export interface Settings {
   // Rules
   countdownSeconds: number; // 0 disables the timer (sandbox)
   caption: string;
+
+  // Visuals
+  palette: PaletteName;
+  glow: number; // 0 (flat) .. 1 (heavy bloom)
+  trail: boolean;
+  trailLength: number; // number of trail samples
+  particles: boolean; // ring-shatter ember bursts
+  particleIntensity: number; // 0 .. 1
+  impactFlare: boolean; // flash on bounce
+
+  // Audio
+  soundEnabled: boolean;
+  volume: number; // 0 .. 1
+  bounceSound: BounceSound;
+  ringBreakSound: boolean;
 }
 
 export type Phase = 'playing' | 'won' | 'lost';
