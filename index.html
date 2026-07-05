@@ -2,7 +2,7 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
     <title>Ball Escape Studio</title>
   </head>
   <body>
@@ -13,12 +13,13 @@
       <button
         id="panel-toggle"
         type="button"
-        aria-label="Toggle settings panel"
+        aria-label="Open settings"
         aria-controls="panel"
-        aria-expanded="true"
+        aria-expanded="false"
       >
         ⚙
       </button>
+      <div id="panel-backdrop" hidden></div>
       <aside id="panel"></aside>
     </div>
     <script type="module" src="/src/main.ts"></script>

@@ -15,6 +15,8 @@ export interface PanelCallbacks {
   onDeletePreset: (value: string) => void;
   onExport: () => void;
   onImportText: (text: string) => void;
+  /** Close the panel (mobile drawer). */
+  onClose: () => void;
 }
 
 /**
@@ -113,9 +115,16 @@ export class Panel {
     const header = document.createElement('div');
     header.className = 'panel-header';
 
+    // Title row: title on the left, a close button (mobile drawer) on the right.
+    const titleRow = document.createElement('div');
+    titleRow.className = 'panel-title-row';
     const title = document.createElement('h1');
     title.textContent = 'Ball Escape Studio';
-    header.appendChild(title);
+    titleRow.appendChild(title);
+    const close = this.button('✕', 'Close settings', () => this.cb.onClose());
+    close.classList.add('panel-close');
+    titleRow.appendChild(close);
+    header.appendChild(titleRow);
 
     // Preset dropdown + delete.
     const presetRow = document.createElement('div');

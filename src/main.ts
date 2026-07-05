@@ -173,17 +173,29 @@ const panel = new Panel(
         panel.flashStatus('Invalid settings file');
       }
     },
+    onClose: () => setPanelOpen(false),
   },
   PRESETS.map((p) => p.name),
   userPresets.list().map((p) => p.name),
 );
 
-// Mobile: toggle the settings drawer.
+// Mobile: the settings panel is a slide-in drawer with a backdrop.
 const panelToggle = document.querySelector<HTMLButtonElement>('#panel-toggle');
+const panelBackdrop = document.querySelector<HTMLElement>('#panel-backdrop');
+
+function setPanelOpen(open: boolean): void {
+  document.body.classList.toggle('panel-open', open);
+  panelToggle?.setAttribute('aria-expanded', String(open));
+  if (panelBackdrop) panelBackdrop.hidden = !open;
+}
+
 panelToggle?.addEventListener('click', () => {
-  const open = document.body.classList.toggle('panel-open');
-  panelToggle.setAttribute('aria-expanded', String(open));
-  resize();
+  setPanelOpen(!document.body.classList.contains('panel-open'));
+});
+panelBackdrop?.addEventListener('click', () => setPanelOpen(false));
+// Close the drawer with Escape.
+window.addEventListener('keydown', (e) => {
+  if (e.key === 'Escape' && document.body.classList.contains('panel-open')) setPanelOpen(false);
 });
 
 // Unlock audio on the first user gesture (browser autoplay policy, N-6).

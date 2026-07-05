@@ -61,9 +61,38 @@ body {
   padding: 16px 18px 40px;
 }
 
+.panel-title-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
 .panel-header h1 {
   font-size: 18px;
   margin: 4px 0 14px;
+}
+
+/* Close button: hidden on desktop, shown in the mobile drawer. */
+.panel-close {
+  display: none;
+  width: 40px;
+  height: 40px;
+  flex-shrink: 0;
+  font-size: 18px;
+  line-height: 1;
+  padding: 0;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Backdrop only exists as a dimming layer for the mobile drawer. */
+#panel-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 8;
+  background: rgba(0, 0, 0, 0.55);
+  display: none;
 }
 
 .preset-row {
@@ -214,30 +243,113 @@ input:focus-visible {
   cursor: pointer;
 }
 
-/* Narrow screens: the panel becomes a slide-in drawer toggled by #panel-toggle. */
+/* Narrow screens (phones): the panel becomes a slide-in drawer with a floating
+   settings button and a dimming backdrop. Tuned for a vertical iPhone: safe-area
+   insets clear the notch/home indicator, dynamic viewport height handles the
+   Safari toolbar, and touch targets/fonts are enlarged. */
 @media (max-width: 900px) {
+  html,
+  body {
+    overscroll-behavior: none;
+  }
+
   #app {
     flex-direction: column;
   }
+
+  /* The game fills the screen; safe-area padding keeps it clear of the notch. */
   #stage {
     height: 100vh;
+    height: 100dvh;
+    padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom)
+      env(safe-area-inset-left);
   }
+
+  /* Floating settings button (FAB), thumb-reachable at bottom-right. */
   #panel-toggle {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    top: auto;
+    bottom: calc(18px + env(safe-area-inset-bottom));
+    right: calc(18px + env(safe-area-inset-right));
+    width: 56px;
+    height: 56px;
+    font-size: 26px;
+    color: #fff;
+    background: var(--accent);
+    border: none;
+    box-shadow: 0 6px 18px rgba(0, 0, 0, 0.55);
+  }
+  body.panel-open #panel-toggle {
+    display: none;
+  }
+
+  body.panel-open #panel-backdrop {
     display: block;
   }
+
   #panel {
     position: fixed;
     top: 0;
     right: 0;
-    width: min(90vw, 360px);
+    width: min(94vw, 420px);
     height: 100vh;
+    height: 100dvh;
     border-left: 1px solid var(--border);
     transform: translateX(100%);
-    transition: transform 0.25s ease;
-    box-shadow: -8px 0 24px rgba(0, 0, 0, 0.5);
+    transition: transform 0.28s ease;
+    box-shadow: -10px 0 30px rgba(0, 0, 0, 0.6);
     z-index: 9;
+    /* Respect the notch (top), home indicator (bottom), and side insets. */
+    padding: calc(14px + env(safe-area-inset-top)) calc(18px + env(safe-area-inset-right))
+      calc(28px + env(safe-area-inset-bottom)) 18px;
+    -webkit-overflow-scrolling: touch;
   }
   body.panel-open #panel {
     transform: translateX(0);
+  }
+
+  .panel-close {
+    display: flex;
+  }
+  .panel-header h1 {
+    font-size: 21px;
+  }
+
+  /* Larger touch targets. 16px inputs prevent iOS Safari's focus-zoom. */
+  button,
+  select,
+  input[type='text'] {
+    font-size: 16px;
+    padding: 12px 12px;
+    min-height: 46px;
+  }
+  .panel-close {
+    min-height: 40px;
+  }
+  .panel-actions {
+    gap: 8px;
+  }
+  .panel-actions button {
+    min-width: 0;
+  }
+
+  .control {
+    margin-bottom: 20px;
+  }
+  .control-label {
+    font-size: 15px;
+    margin-bottom: 8px;
+  }
+  .control input[type='range'] {
+    height: 34px; /* taller hit area for dragging */
+  }
+  .control-toggle input[type='checkbox'] {
+    width: 28px;
+    height: 28px;
+  }
+  .panel-group h2 {
+    font-size: 13px;
   }
 }
