@@ -1,8 +1,14 @@
 name: Deploy to GitHub Pages
 
 # Builds the static site and publishes it to GitHub Pages.
+#
 # One-time setup: in the repo, Settings → Pages → Build and deployment →
-# Source: "GitHub Actions". Then pushes to the default branch deploy automatically.
+# Source: "GitHub Actions". Then pushes to the default branch deploy
+# automatically.
+#
+# Note: GitHub Pages is not available for PRIVATE repos on the free plan. To go
+# live, either make the repo public (Settings → General → Danger Zone → Change
+# visibility) or use a plan that includes private Pages (Pro/Team/Enterprise).
 
 on:
   push:
@@ -31,10 +37,6 @@ jobs:
       - run: npm ci
       - run: npm run build
       - uses: actions/configure-pages@v5
-        # Auto-enable Pages on first run (uses the pages:write permission), so
-        # no manual Settings → Pages toggle is needed.
-        with:
-          enablement: true
       - uses: actions/upload-pages-artifact@v3
         with:
           path: dist
